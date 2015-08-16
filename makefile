@@ -163,10 +163,16 @@ ifeq ($(WIN32),)  #*nix Environments (&& cygwin)
   endif
   LTO_EXCLUDE_VERSIONS = 
   PCAPLIB = pcap
-  ifeq (agcc,$(findstring agcc,$(GCC))) # Android target build?
+  ifeq (arm-linux-androideabi-gcc,$(findstring arm-linux-androideabi-gcc,$(GCC))) # Android target build?
     OS_CCDEFS = -D_GNU_SOURCE
     ifeq (,$(NOASYNCH))
       OS_CCDEFS += -DSIM_ASYNCH_IO 
+    endif
+    OS_LDFLAGS = -lm
+  elif (aarch64-linux-android-gcc,$(findstring aarch64-linux-android-gcc,$(GCC))) # Android target build?
+    OS_CCDEFS = -D_GNU_SOURCE
+    ifeq (,$(NOASYNCH))
+      OS_CCDEFS += -DSIM_ASYNCH_IO
     endif
     OS_LDFLAGS = -lm
   else # Non-Android Builds
@@ -1174,7 +1180,8 @@ ALTAIRZ80 = ${ALTAIRZ80D}/altairz80_cpu.c ${ALTAIRZ80D}/altairz80_cpu_nommu.c \
 	${ALTAIRZ80D}/s100_if3.c ${ALTAIRZ80D}/s100_adcs6.c \
 	${ALTAIRZ80D}/m68kcpu.c ${ALTAIRZ80D}/m68kdasm.c \
 	${ALTAIRZ80D}/m68kopac.c ${ALTAIRZ80D}/m68kopdm.c \
-	${ALTAIRZ80D}/m68kopnz.c ${ALTAIRZ80D}/m68kops.c ${ALTAIRZ80D}/m68ksim.c
+	${ALTAIRZ80D}/m68kopnz.c ${ALTAIRZ80D}/m68kops.c ${ALTAIRZ80D}/m68ksim.c \
+	android-glob/glob.c
 ALTAIRZ80_OPT = -I ${ALTAIRZ80D} -DUSE_SIM_IMD
 
 
@@ -1339,7 +1346,8 @@ endif
 
 ${BIN}BuildROMs${EXE} :
 	${MKDIRBIN}
-ifeq (agcc,$(findstring agcc,$(firstword $(CC))))
+ifeq (arm-linux-androideabi-gcc,$(findstring arm-linux-androideabi-gcc,$(firstword $(CC))))
+	$(eval CFLAGS="")
 	gcc $(wordlist 2,1000,${CC}) sim_BuildROMs.c $(CC_OUTSPEC)
 else
 	${CC} sim_BuildROMs.c $(CC_OUTSPEC)
